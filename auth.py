@@ -15,7 +15,7 @@ TOP = Path(__file__).resolve().parent
 load_dotenv(TOP / "instance" / ".env")
 
 WG_BASE = "https://api.workguru.io/"
-TOKEN_CACHE_FILE = TOP / "token_cache.json"
+TOKEN_CACHE_FILE = TOP / "instance" / "token_cache.json"
 
 TENANTS = {
     "CP": {
