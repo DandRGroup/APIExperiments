@@ -3,3 +3,6 @@
 
 instance/
 
+.env
+
+token_cache.json
