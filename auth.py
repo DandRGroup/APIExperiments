@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 
 TOP = Path(__file__).resolve().parent
-load_dotenv(TOP / ".env")
+load_dotenv(TOP / "instance" / ".env")
 
 WG_BASE = "https://api.workguru.io/"
 TOKEN_CACHE_FILE = TOP / "token_cache.json"
