@@ -293,11 +293,18 @@ def get_stock_by_name(*names: str) -> dict:
 def flows():
     # Fetch and stitch last 100 Out movements from paged API results
 
+    tenant = input("Enter tenant (e.g. CP): ").strip()
+
+    code = input("Enter product code (e.g. 873389): ").strip()
+
+    start_date = input("Enter start date (dd/mm/yyyy) or leave blank for 01/01/2025: ").strip()
+    end_date = input("Enter end date (dd/mm/yyyy) or leave blank for 31/08/2025: ").strip()
+
     outflow_data = get_last_100_outflows(
-        "CP",
-        1580125,
-        start_date="01/01/2025",
-        end_date="31/08/2025",
+        tenant,
+        int(code),
+        start_date=start_date if start_date else "01/01/2025",
+        end_date=end_date if end_date else "31/08/2025",
     )
     print ("--- Sample output of fetched Out movements ---")
 
@@ -309,7 +316,7 @@ def flows():
     # Choose formula_mode: "working_day" or "complex"
     minimum_stock = calculate_safety_stock(
         outflow_data,
-        formula_mode="robust_complex",
+        formula_mode="working_day",
         avg_lead_time_days=1,
         max_lead_time_days=1,
     )
@@ -325,15 +332,3 @@ if __name__ == "__main__":
     #data = endpoints.get_current_stock_levels("CP", [873389, 873388])
 
     flows()
-
-    input("stop")
-
-    data = get_stock_by_name("47mmWebbing")
-    
-    print (data)
-
-    data = endpoints.get_current_stock_levels("CP", [873389, 873388])
-    
-    print (data)
-
-    input("stop")  # Pause to review current stock levels before proceeding with safety stock calculation
