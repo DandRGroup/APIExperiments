@@ -295,14 +295,20 @@ def flows():
 
     tenant = input("Enter tenant (e.g. CP): ").strip()
 
-    code = input("Enter product code (e.g. 873389): ").strip()
+    sku = input("Enter product SKU (e.g. 1-CP-001) or leave blank to use product ID: ").strip()
+    if sku:
+        product_id = endpoints.get_product_id_by_sku(tenant, sku)
+        print(f"Resolved SKU '{sku}' to Product ID: {product_id}")
+    else:
+        code = input("Enter product ID (e.g. 873389): ").strip()
+        product_id = int(code)
 
     start_date = input("Enter start date (dd/mm/yyyy) or leave blank for 01/01/2025: ").strip()
     end_date = input("Enter end date (dd/mm/yyyy) or leave blank for 31/08/2025: ").strip()
 
     outflow_data = get_last_100_outflows(
         tenant,
-        int(code),
+        product_id,
         start_date=start_date if start_date else "01/01/2025",
         end_date=end_date if end_date else "31/08/2025",
     )

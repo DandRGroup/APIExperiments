@@ -155,6 +155,76 @@ def get_current_stock_levels(tenant: str, product_ids: list) -> Dict[str, Any]:
         ) from e
 
 
+def get_product_id_by_sku(tenant: str, sku: str, _retried: bool = False) -> int:
+    """
+    Fetch a product by SKU and return its product ID.
+
+    Args:
+        tenant: The tenant code (e.g., "CP", "DR")
+        sku: The product SKU (e.g., "1-CP-001")
+        _retried: Internal flag to prevent infinite 401 retries
+
+    Returns:
+        The product ID for the SKU
+
+    Raises:
+        RuntimeError: If the API call fails or response has no product ID
+    """
+
+    print(f"\n========== FETCHING PRODUCT ID BY SKU ==========")
+
+    access_token = get_access_token(tenant)
+
+    base = WG_BASE.rstrip("/")
+    url = f"{base}/api/services/app/Product/GetProductBySku"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+
+    params = {
+        "sku": sku,
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=20)
+        response.raise_for_status()
+        product_id = response.json().get("result", {}).get("id")
+
+        if product_id is None:
+            raise RuntimeError(
+                f"No product ID returned for SKU '{sku}' (tenant: {tenant})."
+            )
+
+        return product_id
+
+    except requests.exceptions.HTTPError as e:
+        if response.status_code == 401 and not _retried:
+            print(f"[auth] 401 Unauthorized - invalidating token for {tenant} and retrying once...")
+            invalidate_token(tenant)
+            return get_product_id_by_sku(tenant, sku, _retried=True)
+        print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
+        print(f"Tenant: {tenant}")
+        print(f"SKU: {sku}")
+        print(f"Exception: {repr(e)}")
+        raise RuntimeError(
+            f"Failed to fetch product by SKU from WorkGuru. "
+            f"Tenant: {tenant}, SKU: {sku}. "
+            f"HTTP status: {response.status_code}."
+        ) from e
+    except requests.exceptions.RequestException as e:
+        print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
+        print(f"Tenant: {tenant}")
+        print(f"SKU: {sku}")
+        print(f"Exception: {repr(e)}")
+        raise RuntimeError(
+            f"Failed to fetch product by SKU from WorkGuru. "
+            f"Tenant: {tenant}, SKU: {sku}. "
+            f"HTTP status: {getattr(response, 'status_code', 'unknown')}."
+        ) from e
+
+
 if __name__ == "__main__":
     # Example usage
     tenant_code = "CP"  # or "DR"
