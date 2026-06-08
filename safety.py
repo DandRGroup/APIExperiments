@@ -293,9 +293,19 @@ def get_stock_by_name(*names: str) -> dict:
 def flows():
     # Fetch and stitch last 100 Out movements from paged API results
 
-    tenant = input("Enter tenant (e.g. CP): ").strip()
+    
 
     sku = input("Enter product SKU (e.g. 1-CP-001) or leave blank to use product ID: ").strip()
+
+    if "CP" in sku:
+        tenant = "CP"
+
+    elif "DR" in sku:
+        tenant = "DR"
+
+    else:
+        tenant = input("Enter tenant (e.g. CP): ").strip()
+
     if sku:
         product_id = endpoints.get_product_id_by_sku(tenant, sku)
         print(f"Resolved SKU '{sku}' to Product ID: {product_id}")

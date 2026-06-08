@@ -47,7 +47,7 @@ def _load_token_cache():
             if tenant in TENANTS and data.get("token") and data.get("token_exp", 0) > _now():
                 TENANTS[tenant]["token"] = data["token"]
                 TENANTS[tenant]["token_exp"] = data["token_exp"]
-                print(f"[token cache] Loaded cached token for {tenant}")
+                #print(f"[token cache] Loaded cached token for {tenant}")
     except Exception as e:
         print(f"[token cache] Failed to load cache: {e}")
 
@@ -82,8 +82,8 @@ def _log_wg_payload(label: str, payload: dict):
         print(f"[workGuru] Failed to log payload for {label}: {exc}")
 
 def _fetch_access_token(tenant: str):
-    print("\n========== FETCHING NEW WORKGURU TOKEN ==========")
-    print(f"Tenant: {tenant}")
+    #print("\n========== FETCHING NEW WORKGURU TOKEN ==========")
+    #print(f"Tenant: {tenant}")
 
     creds = TENANTS.get(tenant)
     if not creds:
@@ -91,7 +91,7 @@ def _fetch_access_token(tenant: str):
 
     base = WG_BASE.rstrip("/")  # e.g. "https://api.workguru.io"
     url = f"{base}/api/ClientTokenAuth/Authenticate/api/client/v1/tokenauth"
-    print(f"Auth URL: {url}")
+    #print(f"Auth URL: {url}")
 
     payload = {
         "apiKey": creds["key"],
@@ -106,7 +106,7 @@ def _fetch_access_token(tenant: str):
         res = requests.post(url, json=payload, timeout=20)
 
         # Debug info
-        print("Auth status code:", res.status_code)
+        #print("Auth status code:", res.status_code)
         try:
             # First 500 chars of body so logs don't explode
             print("Auth response body preview:")
@@ -119,12 +119,12 @@ def _fetch_access_token(tenant: str):
 
     except Exception as e:
         # This is what you're seeing now in the traceback
-        print("\n!!!!!! ERROR WHILE FETCHING WORKGURU TOKEN !!!!!!")
-        print("Tenant:", tenant)
-        print("Exception:", repr(e))
-        print("Traceback:")
+        #print("\n!!!!!! ERROR WHILE FETCHING WORKGURU TOKEN !!!!!!")
+        #print("Tenant:", tenant)
+        #print("Exception:", repr(e))
+        #print("Traceback:")
         traceback.print_exc()
-        print("--------------------------------------------------")
+        #print("--------------------------------------------------")
         raise RuntimeError(
             f"Failed to fetch WorkGuru token for tenant '{tenant}'. "
             f"HTTP status: {getattr(res, 'status_code', 'unknown')}. "
@@ -146,9 +146,9 @@ def _fetch_access_token(tenant: str):
     TENANTS[tenant]["token_exp"] = exp
     _save_token_cache()
 
-    print("Token fetched OK for tenant", tenant)
-    print("Token expires at:", exp)
-    print("==================================================\n")
+    #print("Token fetched OK for tenant", tenant)
+    #print("Token expires at:", exp)
+    #print("==================================================\n")
 
     return access
 
@@ -159,13 +159,13 @@ _load_token_cache()
 
 
 def get_access_token(tenant: str) -> str:
-    print(f"Getting access token for tenant: {tenant}")
+    ##print(f"Getting access token for tenant: {tenant}")
 
     cached = TENANTS[tenant].get("token")
     exp = TENANTS[tenant].get("token_exp", 0)
 
     if cached and exp > _now():
-        print(f"[token cache] Using cached token for {tenant}")
+        ##print(f"[token cache] Using cached token for {tenant}")
         return cached
 
     _fetch_access_token(tenant)

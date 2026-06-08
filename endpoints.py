@@ -19,7 +19,7 @@ def get_stock_movements(tenant: str, product_id: int, skip_count: int = 0) -> Di
         RuntimeError: If the API call fails
     """
 
-    print (f"\n========== FETCHING STOCK MOVEMENTS ==========")
+    # print (f"\n========== FETCHING STOCK MOVEMENTS ==========")
     
     # Get the access token for this tenant
     access_token = get_access_token(tenant)
@@ -61,23 +61,23 @@ def get_stock_movements(tenant: str, product_id: int, skip_count: int = 0) -> Di
         
     except requests.exceptions.HTTPError as e:
         if response.status_code == 401:
-            print(f"[auth] 401 Unauthorized — invalidating token for {tenant} and retrying once...")
+            # print(f"[auth] 401 Unauthorized — invalidating token for {tenant} and retrying once...")
             invalidate_token(tenant)
             return get_stock_movements(tenant, product_id, skip_count=skip_count)
-        print(f"\n!!!!!! ERROR FETCHING STOCK MOVEMENTS !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"ProductId: {product_id}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING STOCK MOVEMENTS !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"ProductId: {product_id}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch stock movements from WorkGuru. "
             f"Tenant: {tenant}, ProductId: {product_id}. "
             f"HTTP status: {response.status_code}."
         ) from e
     except requests.exceptions.RequestException as e:
-        print(f"\n!!!!!! ERROR FETCHING STOCK MOVEMENTS !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"ProductId: {product_id}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING STOCK MOVEMENTS !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"ProductId: {product_id}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch stock movements from WorkGuru. "
             f"Tenant: {tenant}, ProductId: {product_id}. "
@@ -102,7 +102,7 @@ def get_current_stock_levels(tenant: str, product_ids: list) -> Dict[str, Any]:
         RuntimeError: If the API call fails
     """
 
-    print(f"\n========== FETCHING CURRENT STOCK LEVELS ==========")
+    # print(f"\n========== FETCHING CURRENT STOCK LEVELS ==========")
 
     access_token = get_access_token(tenant)
 
@@ -131,23 +131,23 @@ def get_current_stock_levels(tenant: str, product_ids: list) -> Dict[str, Any]:
 
     except requests.exceptions.HTTPError as e:
         if response.status_code == 401:
-            print(f"[auth] 401 Unauthorized — invalidating token for {tenant} and retrying once...")
+            # print(f"[auth] 401 Unauthorized — invalidating token for {tenant} and retrying once...")
             invalidate_token(tenant)
             return get_current_stock_levels(tenant, product_ids)
-        print(f"\n!!!!!! ERROR FETCHING CURRENT STOCK LEVELS !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"ProductIds: {product_ids}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING CURRENT STOCK LEVELS !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"ProductIds: {product_ids}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch current stock levels from WorkGuru. "
             f"Tenant: {tenant}, ProductIds: {product_ids}. "
             f"HTTP status: {response.status_code}."
         ) from e
     except requests.exceptions.RequestException as e:
-        print(f"\n!!!!!! ERROR FETCHING CURRENT STOCK LEVELS !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"ProductIds: {product_ids}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING CURRENT STOCK LEVELS !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"ProductIds: {product_ids}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch current stock levels from WorkGuru. "
             f"Tenant: {tenant}, ProductIds: {product_ids}. "
@@ -171,7 +171,7 @@ def get_product_id_by_sku(tenant: str, sku: str, _retried: bool = False) -> int:
         RuntimeError: If the API call fails or response has no product ID
     """
 
-    print(f"\n========== FETCHING PRODUCT ID BY SKU ==========")
+    # print(f"\n========== FETCHING PRODUCT ID BY SKU ==========")
 
     access_token = get_access_token(tenant)
 
@@ -190,7 +190,16 @@ def get_product_id_by_sku(tenant: str, sku: str, _retried: bool = False) -> int:
     try:
         response = requests.get(url, headers=headers, params=params, timeout=20)
         response.raise_for_status()
-        product_id = response.json().get("result", {}).get("id")
+        payload = response.json()
+        result = payload.get("result")
+
+        # API may return result=None when SKU does not exist.
+        if not isinstance(result, dict):
+            raise RuntimeError(
+                f"No product found for SKU '{sku}' (tenant: {tenant})."
+            )
+
+        product_id = result.get("id")
 
         if product_id is None:
             raise RuntimeError(
@@ -201,23 +210,23 @@ def get_product_id_by_sku(tenant: str, sku: str, _retried: bool = False) -> int:
 
     except requests.exceptions.HTTPError as e:
         if response.status_code == 401 and not _retried:
-            print(f"[auth] 401 Unauthorized - invalidating token for {tenant} and retrying once...")
+            # print(f"[auth] 401 Unauthorized - invalidating token for {tenant} and retrying once...")
             invalidate_token(tenant)
             return get_product_id_by_sku(tenant, sku, _retried=True)
-        print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"SKU: {sku}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"SKU: {sku}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch product by SKU from WorkGuru. "
             f"Tenant: {tenant}, SKU: {sku}. "
             f"HTTP status: {response.status_code}."
         ) from e
     except requests.exceptions.RequestException as e:
-        print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
-        print(f"Tenant: {tenant}")
-        print(f"SKU: {sku}")
-        print(f"Exception: {repr(e)}")
+        # print(f"\n!!!!!! ERROR FETCHING PRODUCT BY SKU !!!!!!")
+        # print(f"Tenant: {tenant}")
+        # print(f"SKU: {sku}")
+        # print(f"Exception: {repr(e)}")
         raise RuntimeError(
             f"Failed to fetch product by SKU from WorkGuru. "
             f"Tenant: {tenant}, SKU: {sku}. "
@@ -230,4 +239,4 @@ if __name__ == "__main__":
     tenant_code = "CP"  # or "DR"
     product_id = 873085  # replace with actual ProductId
     stock_data = get_stock_movements(tenant_code, product_id)
-    print(json.dumps(stock_data, indent=2))
+    # print(json.dumps(stock_data, indent=2))
